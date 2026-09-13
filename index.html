@@ -258,6 +258,86 @@
   }
   .duration-legend div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 2px; }
   .duration-legend b { display: block; color: var(--ink); font-size: 14px; }
+
+  .sync-section {
+    margin-top: 24px;
+    border-top: 1px dashed var(--line);
+    padding-top: 18px;
+  }
+  .sync-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+  }
+  .sync-status {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .sync-status.on { color: var(--done); font-weight: 600; }
+  .sync-code-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+  .sync-code-box code {
+    flex: 1;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    word-break: break-all;
+  }
+  .sync-code-box button {
+    border: none;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .sync-row {
+    display: flex;
+    gap: 8px;
+  }
+  .sync-row input {
+    flex: 1;
+    border: none;
+    border-bottom: 1.5px dashed var(--line);
+    background: transparent;
+    font-size: 14px;
+    padding: 8px 2px;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .sync-row input:focus { outline: none; border-bottom-color: var(--ink); }
+  .sync-btn {
+    border: 1.5px solid var(--ink);
+    background: none;
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .sync-btn.primary { background: var(--ink); color: var(--paper); }
+  .sync-btn:disabled { opacity: 0.5; }
+  .sync-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
 </style>
 </head>
 <body>
@@ -267,7 +347,7 @@
     <div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div>
   </div>
 
-  <h1>Click <span>Roll the dice</span> below. To pick a task</h1>
+  <h1>Roll a <span>d6</span> to pick a task</h1>
   <p class="sub">Add up to 6 tasks, then roll to find out what you're doing next and for how long.</p>
 
   <div class="add-row">
@@ -299,6 +379,25 @@
   <div class="duration-legend">
     <div><b>1</b>10 min</div><div><b>2</b>20 min</div><div><b>3</b>30 min</div>
     <div><b>4</b>40 min</div><div><b>5</b>50 min</div><div><b>6</b>break</div>
+  </div>
+
+  <div class="sync-section">
+    <p class="sync-title">Sync across devices</p>
+    <p class="sync-status" id="syncStatus">Not synced &mdash; tasks only live on this device</p>
+
+    <div class="sync-code-box" id="syncCodeBox" style="display:none">
+      <code id="syncCodeText"></code>
+      <button id="copyCode">Copy</button>
+    </div>
+
+    <div class="sync-actions" id="syncActions">
+      <button class="sync-btn primary" id="startSyncBtn">Start syncing this device</button>
+    </div>
+
+    <div class="sync-row" id="connectRow" style="margin-top:10px">
+      <input id="connectCodeInput" type="text" placeholder="Paste a code from another device" />
+      <button class="sync-btn" id="connectBtn">Connect</button>
+    </div>
   </div>
 </div>
 
@@ -350,10 +449,12 @@ document.getElementById('listFrame').addEventListener('click', (e) => {
   if (e.target.classList.contains('check')) {
     tasks[i].done = !tasks[i].done;
     saveTasks();
+    pushToCloud();
     render();
   } else if (e.target.classList.contains('remove')) {
     tasks.splice(i, 1);
     saveTasks();
+    pushToCloud();
     render();
   }
 });
@@ -369,6 +470,7 @@ function addTask() {
   tasks.push({ text: val, done: false });
   input.value = '';
   saveTasks();
+  pushToCloud();
   render();
 }
 
@@ -500,8 +602,129 @@ function showResult(taskFace, durFace) {
   updateTimerDisplay();
 }
 
+const JSONBLOB_BASE = 'https://jsonblob.com/api/jsonBlob';
+let syncId = localStorage.getItem('rollATaskSyncId') || null;
+let syncing = false;
+
+function setSyncStatus(text, on) {
+  const el = document.getElementById('syncStatus');
+  el.textContent = text;
+  el.classList.toggle('on', !!on);
+}
+
+function refreshSyncUI() {
+  const codeBox = document.getElementById('syncCodeBox');
+  const codeText = document.getElementById('syncCodeText');
+  const actions = document.getElementById('syncActions');
+  if (syncId) {
+    codeBox.style.display = 'flex';
+    codeText.textContent = syncId;
+    actions.innerHTML = '<button class="sync-btn" id="stopSyncBtn">Stop syncing</button>';
+    document.getElementById('stopSyncBtn').addEventListener('click', stopSync);
+    setSyncStatus('Synced — this device updates the cloud copy', true);
+  } else {
+    codeBox.style.display = 'none';
+    actions.innerHTML = '<button class="sync-btn primary" id="startSyncBtn">Start syncing this device</button>';
+    document.getElementById('startSyncBtn').addEventListener('click', startSync);
+    setSyncStatus('Not synced — tasks only live on this device', false);
+  }
+}
+
+async function startSync() {
+  setSyncStatus('Setting up sync…');
+  try {
+    const res = await fetch(JSONBLOB_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ tasks })
+    });
+    if (!res.ok) throw new Error('create failed');
+    const location = res.headers.get('Location');
+    const id = location.split('/').pop();
+    syncId = id;
+    localStorage.setItem('rollATaskSyncId', syncId);
+    refreshSyncUI();
+  } catch (e) {
+    setSyncStatus('Could not start sync — check your connection and try again');
+  }
+}
+
+function stopSync() {
+  syncId = null;
+  localStorage.removeItem('rollATaskSyncId');
+  refreshSyncUI();
+}
+
+async function connectToCode() {
+  const input = document.getElementById('connectCodeInput');
+  const code = input.value.trim();
+  if (!code) return;
+  setSyncStatus('Connecting…');
+  try {
+    const res = await fetch(`${JSONBLOB_BASE}/${code}`, {
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    tasks = Array.isArray(data.tasks) ? data.tasks : [];
+    syncId = code;
+    localStorage.setItem('rollATaskSyncId', syncId);
+    saveTasks();
+    input.value = '';
+    refreshSyncUI();
+    render();
+  } catch (e) {
+    setSyncStatus("Couldn't find that code — double check it and try again");
+  }
+}
+
+async function pushToCloud() {
+  if (!syncId || syncing) return;
+  syncing = true;
+  try {
+    await fetch(`${JSONBLOB_BASE}/${syncId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ tasks })
+    });
+  } catch (e) {
+    // silently keep local copy; will retry on next change
+  }
+  syncing = false;
+}
+
+async function pullFromCloud() {
+  if (!syncId) return;
+  try {
+    const res = await fetch(`${JSONBLOB_BASE}/${syncId}`, {
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    tasks = Array.isArray(data.tasks) ? data.tasks : [];
+    saveTasks();
+    render();
+  } catch (e) {
+    // offline: fall back to whatever is cached locally
+  }
+}
+
+document.getElementById('connectBtn').addEventListener('click', connectToCode);
+document.getElementById('connectCodeInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') connectToCode();
+});
+document.getElementById('copyCode').addEventListener('click', () => {
+  navigator.clipboard.writeText(syncId).then(() => {
+    const btn = document.getElementById('copyCode');
+    btn.textContent = 'Copied';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+  });
+});
+
 loadTasks();
+refreshSyncUI();
 render();
+if (syncId) pullFromCloud();
 </script>
 </body>
 </html>
