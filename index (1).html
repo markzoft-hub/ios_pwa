@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Roll a Task</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Roll a Task">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#B4432E">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+
+<style>
+  :root {
+    --paper: #FAF7F0;
+    --paper-edge: #C9A227;
+    --ink: #201C16;
+    --ink-soft: #5B564C;
+    --line: #D8D2C3;
+    --die: #201C16;
+    --accent: #B4432E;
+    --done: #8C9E7C;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #E9E4D6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: calc(24px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .pad {
+    width: 100%;
+    max-width: 460px;
+    background: var(--paper);
+    border-radius: 4px 18px 18px 4px;
+    position: relative;
+    padding: 28px 22px 32px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+  }
+  .pad::before {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 6px;
+    bottom: 6px;
+    width: 10px;
+    background: var(--paper-edge);
+    border-radius: 6px 0 0 6px;
+  }
+  .rings {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 8px;
+    margin-bottom: 4px;
+  }
+  .ring {
+    width: 14px;
+    height: 22px;
+    border: 3px solid var(--ink);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    opacity: 0.85;
+  }
+  h1 {
+    font-size: 21px;
+    font-weight: 700;
+    margin: 18px 0 4px;
+    line-height: 1.25;
+  }
+  h1 span { color: var(--accent); }
+  .sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+  }
+  .add-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .add-row input {
+    flex: 1;
+    border: none;
+    border-bottom: 1.5px dashed var(--line);
+    background: transparent;
+    font-size: 15px;
+    padding: 8px 2px;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .add-row input:focus { outline: none; border-bottom-color: var(--ink); }
+  .add-row button {
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 999px;
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .add-row button:active { transform: scale(0.94); }
+
+  .list-frame {
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    padding: 6px 16px;
+    margin-bottom: 22px;
+  }
+  .task-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .task-row:last-child { border-bottom: none; }
+  .task-num {
+    font-weight: 700;
+    font-size: 17px;
+    width: 18px;
+    flex-shrink: 0;
+  }
+  .task-text {
+    flex: 1;
+    font-size: 15px;
+    word-break: break-word;
+  }
+  .task-row.done .task-text {
+    text-decoration: line-through;
+    color: var(--ink-soft);
+  }
+  .task-row.picked { background: rgba(180,67,46,0.06); border-radius: 8px; }
+  .check {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: 50%;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    padding: 0;
+  }
+  .check.on { background: var(--done); border-color: var(--done); color: white; font-size: 13px; }
+  .remove {
+    border: none;
+    background: none;
+    color: var(--ink-soft);
+    font-size: 17px;
+    cursor: pointer;
+    padding: 2px 4px;
+    flex-shrink: 0;
+  }
+  .empty {
+    padding: 20px 0;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  .roll-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent);
+    color: var(--paper);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 22px;
+  }
+  .roll-btn:active { transform: scale(0.98); }
+  .roll-btn:disabled { opacity: 0.45; cursor: default; }
+
+  .result {
+    display: none;
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 22px;
+    text-align: center;
+    background: #fff;
+  }
+  .result.show { display: block; }
+  .dice-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 14px;
+  }
+  .die {
+    width: 52px;
+    height: 52px;
+    border: 2.5px solid var(--die);
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 7px;
+  }
+  .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--die); margin: auto; }
+  .result-task {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 4px 0 2px;
+  }
+  .result-dur {
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .timer-wrap {
+    display: none;
+    text-align: center;
+    margin-top: 14px;
+  }
+  .timer-wrap.show { display: block; }
+  .timer {
+    font-size: 40px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    margin: 6px 0 12px;
+  }
+  .timer-controls { display: flex; gap: 10px; justify-content: center; }
+  .timer-controls button {
+    border: 1.5px solid var(--ink);
+    background: none;
+    color: var(--ink);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .timer-controls button.primary { background: var(--ink); color: var(--paper); }
+
+  .duration-legend {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .duration-legend div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 2px; }
+  .duration-legend b { display: block; color: var(--ink); font-size: 14px; }
+
+  .sync-section {
+    margin-top: 24px;
+    border-top: 1px dashed var(--line);
+    padding-top: 18px;
+  }
+  .sync-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+  }
+  .sync-status {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .sync-status.on { color: var(--done); font-weight: 600; }
+  .sync-code-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+  .sync-code-box code {
+    flex: 1;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    word-break: break-all;
+  }
+  .sync-code-box button {
+    border: none;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .sync-row {
+    display: flex;
+    gap: 8px;
+  }
+  .sync-row input {
+    flex: 1;
+    border: none;
+    border-bottom: 1.5px dashed var(--line);
+    background: transparent;
+    font-size: 14px;
+    padding: 8px 2px;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .sync-row input:focus { outline: none; border-bottom-color: var(--ink); }
+  .sync-btn {
+    border: 1.5px solid var(--ink);
+    background: none;
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .sync-btn.primary { background: var(--ink); color: var(--paper); }
+  .sync-btn:disabled { opacity: 0.5; }
+  .sync-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+<div class="pad">
+  <div class="rings">
+    <div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div>
+    <div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div>
+  </div>
+
+  <h1>Roll a <span>d6</span> to pick a task</h1>
+  <p class="sub">Add up to 6 tasks, then roll to find out what you're doing next and for how long.</p>
+
+  <div class="add-row">
+    <input id="taskInput" type="text" placeholder="Reply to emails" maxlength="60" />
+    <button id="addBtn" aria-label="Add task">+</button>
+  </div>
+
+  <div class="list-frame" id="listFrame"></div>
+
+  <button class="roll-btn" id="rollBtn">Roll the dice</button>
+
+  <div class="result" id="result">
+    <div class="dice-row">
+      <div class="die" id="dieTask"></div>
+      <div class="die" id="dieDur"></div>
+    </div>
+    <div class="result-task" id="resultTask"></div>
+    <div class="result-dur" id="resultDur"></div>
+
+    <div class="timer-wrap" id="timerWrap">
+      <div class="timer" id="timerDisplay">00:00</div>
+      <div class="timer-controls">
+        <button id="startPause" class="primary">Start</button>
+        <button id="resetTimer">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="duration-legend">
+    <div><b>1</b>10 min</div><div><b>2</b>20 min</div><div><b>3</b>30 min</div>
+    <div><b>4</b>40 min</div><div><b>5</b>50 min</div><div><b>6</b>break</div>
+  </div>
+
+  <div class="sync-section">
+    <p class="sync-title">Cloud sync</p>
+    <p class="sync-status" id="syncStatus">Connecting…</p>
+  </div>
+</div>
+
+<script>
+let tasks = [];
+
+function loadTasks() {
+  try {
+    const saved = localStorage.getItem('rollATaskTasks');
+    if (saved) tasks = JSON.parse(saved);
+  } catch (e) {}
+}
+
+function saveTasks() {
+  try {
+    localStorage.setItem('rollATaskTasks', JSON.stringify(tasks));
+  } catch (e) {}
+}
+
+function render() {
+  const frame = document.getElementById('listFrame');
+  frame.innerHTML = '';
+  if (tasks.length === 0) {
+    frame.innerHTML = '<div class="empty">Add a task below to fill your first slot.</div>';
+  }
+  tasks.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'task-row' + (t.done ? ' done' : '');
+    row.innerHTML = `
+      <div class="task-num">${i + 1}</div>
+      <button class="check ${t.done ? 'on' : ''}" data-i="${i}">${t.done ? '&#10003;' : ''}</button>
+      <div class="task-text">${escapeHtml(t.text)}</div>
+      <button class="remove" data-i="${i}" aria-label="Remove task">&#215;</button>
+    `;
+    frame.appendChild(row);
+  });
+  document.getElementById('rollBtn').disabled = tasks.filter(t => !t.done).length === 0;
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+document.getElementById('listFrame').addEventListener('click', (e) => {
+  const i = e.target.dataset.i;
+  if (i === undefined) return;
+  if (e.target.classList.contains('check')) {
+    tasks[i].done = !tasks[i].done;
+    saveTasks();
+    pushToCloud();
+    render();
+  } else if (e.target.classList.contains('remove')) {
+    tasks.splice(i, 1);
+    saveTasks();
+    pushToCloud();
+    render();
+  }
+});
+
+function addTask() {
+  const input = document.getElementById('taskInput');
+  const val = input.value.trim();
+  if (!val) return;
+  if (tasks.length >= 6) {
+    input.placeholder = 'Full up, finish or clear a slot first';
+    return;
+  }
+  tasks.push({ text: val, done: false });
+  input.value = '';
+  saveTasks();
+  pushToCloud();
+  render();
+}
+
+document.getElementById('addBtn').addEventListener('click', addTask);
+document.getElementById('taskInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addTask();
+});
+
+const durations = { 1: 10, 2: 20, 3: 30, 4: 40, 5: 50, 6: 0 };
+
+function pipsForFace(face) {
+  const map = {
+    1: [5],
+    2: [1, 9],
+    3: [1, 5, 9],
+    4: [1, 3, 7, 9],
+    5: [1, 3, 5, 7, 9],
+    6: [1, 3, 4, 6, 7, 9]
+  };
+  return map[face];
+}
+
+function renderDie(el, face) {
+  el.innerHTML = '';
+  for (let i = 1; i <= 9; i++) {
+    const cell = document.createElement('div');
+    if (pipsForFace(face).includes(i)) cell.className = 'pip';
+    el.appendChild(cell);
+  }
+}
+
+let timerInterval = null;
+let secondsLeft = 0;
+let running = false;
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  running = false;
+  document.getElementById('startPause').textContent = 'Start';
+}
+
+function updateTimerDisplay() {
+  const m = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+  const s = String(secondsLeft % 60).padStart(2, '0');
+  document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+}
+
+document.getElementById('startPause').addEventListener('click', () => {
+  if (running) {
+    stopTimer();
+    return;
+  }
+  running = true;
+  document.getElementById('startPause').textContent = 'Pause';
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    updateTimerDisplay();
+    if (secondsLeft <= 0) {
+      stopTimer();
+      document.getElementById('timerDisplay').textContent = "Time's up";
+    }
+  }, 1000);
+});
+
+document.getElementById('resetTimer').addEventListener('click', () => {
+  stopTimer();
+  secondsLeft = window.currentDurationSeconds || 0;
+  updateTimerDisplay();
+});
+
+document.getElementById('rollBtn').addEventListener('click', () => {
+  const open = tasks.map((t, i) => ({ ...t, i })).filter(t => !t.done);
+  if (open.length === 0) return;
+
+  stopTimer();
+
+  const taskFace = 1 + Math.floor(Math.random() * 6);
+  const durFace = 1 + Math.floor(Math.random() * 6);
+
+  document.getElementById('result').classList.add('show');
+  const dieTask = document.getElementById('dieTask');
+  const dieDur = document.getElementById('dieDur');
+
+  let rolls = 0;
+  const rollAnim = setInterval(() => {
+    renderDie(dieTask, 1 + Math.floor(Math.random() * 6));
+    renderDie(dieDur, 1 + Math.floor(Math.random() * 6));
+    rolls++;
+    if (rolls > 8) {
+      clearInterval(rollAnim);
+      renderDie(dieTask, taskFace);
+      renderDie(dieDur, durFace);
+      showResult(taskFace, durFace);
+    }
+  }, 70);
+});
+
+function showResult(taskFace, durFace) {
+  document.querySelectorAll('.task-row').forEach(r => r.classList.remove('picked'));
+  const chosen = tasks[taskFace - 1];
+  const resultTaskEl = document.getElementById('resultTask');
+  const resultDurEl = document.getElementById('resultDur');
+  const timerWrap = document.getElementById('timerWrap');
+
+  if (!chosen || chosen.done) {
+    resultTaskEl.textContent = `Slot ${taskFace} is empty or done, roll again`;
+    resultDurEl.textContent = '';
+    timerWrap.classList.remove('show');
+    return;
+  }
+
+  const rows = document.querySelectorAll('.task-row');
+  if (rows[taskFace - 1]) rows[taskFace - 1].classList.add('picked');
+
+  resultTaskEl.textContent = chosen.text;
+
+  const mins = durations[durFace];
+  if (mins === 0) {
+    resultDurEl.textContent = 'Take a 10 min break';
+    timerWrap.classList.add('show');
+    window.currentDurationSeconds = 10 * 60;
+  } else {
+    resultDurEl.textContent = `Spend ${mins} min on it`;
+    timerWrap.classList.add('show');
+    window.currentDurationSeconds = mins * 60;
+  }
+  secondsLeft = window.currentDurationSeconds;
+  updateTimerDisplay();
+}
+
+const FIREBASE_URL = 'https://pwa--roll-a-task-default-rtdb.firebaseio.com/';
+const TASKS_URL = FIREBASE_URL + 'tasks.json';
+let syncing = false;
+
+function setSyncStatus(text, on) {
+  const el = document.getElementById('syncStatus');
+  el.textContent = text;
+  el.classList.toggle('on', !!on);
+}
+
+async function pushToCloud() {
+  if (syncing) return;
+  syncing = true;
+  try {
+    await fetch(TASKS_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tasks)
+    });
+    setSyncStatus('Synced to cloud', true);
+  } catch (e) {
+    setSyncStatus('Offline — changes saved on this device only');
+  }
+  syncing = false;
+}
+
+async function pullFromCloud() {
+  try {
+    const res = await fetch(TASKS_URL);
+    if (!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      tasks = data;
+      saveTasks();
+      render();
+    }
+    setSyncStatus('Synced to cloud', true);
+  } catch (e) {
+    setSyncStatus('Offline — showing last saved copy on this device');
+  }
+}
+
+loadTasks();
+render();
+pullFromCloud();
+</script>
+</body>
+</html>
