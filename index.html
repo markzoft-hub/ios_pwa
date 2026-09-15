@@ -497,7 +497,8 @@ document.getElementById('rollBtn').addEventListener('click', () => {
 
   stopTimer();
 
-  const taskFace = 1 + Math.floor(Math.random() * 6);
+  const validFaces = [1, 2, 3, 4, 5, 6].filter(f => tasks[f - 1] && !tasks[f - 1].done);
+  const taskFace = validFaces[Math.floor(Math.random() * validFaces.length)];
   const durFace = 1 + Math.floor(Math.random() * 6);
 
   document.getElementById('result').classList.add('show');
