@@ -237,6 +237,14 @@
     font-variant-numeric: tabular-nums;
     margin: 4px 0 10px;
   }
+  .timer.done {
+    color: var(--accent);
+    animation: timerFlash 0.9s ease-in-out infinite;
+  }
+  @keyframes timerFlash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
   .timer-controls { display: flex; gap: 10px; justify-content: center; }
   .timer-controls button {
     border: 1.5px solid var(--ink);
@@ -525,6 +533,52 @@ let timerInterval = null;
 let secondsLeft = 0;
 let running = false;
 
+function ensureAudioContext() {
+  if (!window.audioCtx) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx) window.audioCtx = new Ctx();
+  }
+  if (window.audioCtx && window.audioCtx.state === 'suspended') {
+    window.audioCtx.resume();
+  }
+}
+
+function playChime() {
+  try {
+    ensureAudioContext();
+    const ctx = window.audioCtx;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    for (let i = 0; i < 3; i++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      const t = now + i * 0.35;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    }
+  } catch (e) {}
+}
+
+function requestNotifyPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().catch(() => {});
+  }
+}
+
+function notifyTimeUp(label) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification("Time's up!", { body: label || 'Your rolled time is up.' });
+    } catch (e) {}
+  }
+}
+
 function stopTimer() {
   clearInterval(timerInterval);
   timerInterval = null;
@@ -539,10 +593,13 @@ function updateTimerDisplay() {
 }
 
 document.getElementById('startPause').addEventListener('click', () => {
+  ensureAudioContext();
+  requestNotifyPermission();
   if (running) {
     stopTimer();
     return;
   }
+  document.getElementById('timerDisplay').classList.remove('done');
   running = true;
   document.getElementById('startPause').textContent = 'Pause';
   timerInterval = setInterval(() => {
@@ -550,13 +607,19 @@ document.getElementById('startPause').addEventListener('click', () => {
     updateTimerDisplay();
     if (secondsLeft <= 0) {
       stopTimer();
-      document.getElementById('timerDisplay').textContent = "Time's up";
+      const display = document.getElementById('timerDisplay');
+      display.textContent = "Time's up";
+      display.classList.add('done');
+      playChime();
+      const label = document.getElementById('resultTask').textContent;
+      notifyTimeUp(label);
     }
   }, 1000);
 });
 
 document.getElementById('resetTimer').addEventListener('click', () => {
   stopTimer();
+  document.getElementById('timerDisplay').classList.remove('done');
   secondsLeft = window.currentDurationSeconds || 0;
   updateTimerDisplay();
 });
@@ -620,6 +683,7 @@ function showResult(taskFace, durFace) {
     window.currentDurationSeconds = mins * 60;
   }
   secondsLeft = window.currentDurationSeconds;
+  document.getElementById('timerDisplay').classList.remove('done');
   updateTimerDisplay();
 }
 
