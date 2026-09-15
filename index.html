@@ -260,6 +260,32 @@
   }
   .duration-legend div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 2px; }
   .duration-legend b { display: block; color: var(--ink); font-size: 14px; }
+  .duration-legend {
+    margin-top: -4px;
+  }
+  .duration-hint {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 0 0 8px;
+  }
+  .dur-toggle {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 8px;
+    padding: 6px 2px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--ink-soft);
+    opacity: 0.5;
+  }
+  .dur-toggle.on {
+    border-color: var(--ink);
+    background: rgba(180,67,46,0.08);
+    color: var(--ink);
+    opacity: 1;
+  }
+  .dur-toggle b { display: block; color: inherit; font-size: 14px; }
 
   .sync-section {
     margin-top: 24px;
@@ -336,9 +362,14 @@
     </div>
   </div>
 
-  <div class="duration-legend">
-    <div><b>1</b>10 min</div><div><b>2</b>20 min</div><div><b>3</b>30 min</div>
-    <div><b>4</b>40 min</div><div><b>5</b>50 min</div><div><b>6</b>break</div>
+  <p class="duration-hint">Tap to mark which durations you have time for</p>
+  <div class="duration-legend" id="durationLegend">
+    <button class="dur-toggle" data-face="1"><b>1</b>10 min</button>
+    <button class="dur-toggle" data-face="2"><b>2</b>20 min</button>
+    <button class="dur-toggle" data-face="3"><b>3</b>30 min</button>
+    <button class="dur-toggle" data-face="4"><b>4</b>40 min</button>
+    <button class="dur-toggle" data-face="5"><b>5</b>50 min</button>
+    <button class="dur-toggle" data-face="6"><b>6</b>break</button>
   </div>
 
   <div class="sync-section">
@@ -430,6 +461,45 @@ document.getElementById('taskInput').addEventListener('keydown', (e) => {
 
 const durations = { 1: 10, 2: 20, 3: 30, 4: 40, 5: 50, 6: 0 };
 
+let availableDurations = new Set([1, 2, 3, 4, 5, 6]);
+
+function loadAvailableDurations() {
+  try {
+    const saved = localStorage.getItem('rollATaskAvailableDurations');
+    if (saved) {
+      const arr = JSON.parse(saved);
+      if (Array.isArray(arr) && arr.length > 0) availableDurations = new Set(arr);
+    }
+  } catch (e) {}
+}
+
+function saveAvailableDurations() {
+  try {
+    localStorage.setItem('rollATaskAvailableDurations', JSON.stringify([...availableDurations]));
+  } catch (e) {}
+}
+
+function renderDurationToggles() {
+  document.querySelectorAll('.dur-toggle').forEach(btn => {
+    const face = Number(btn.dataset.face);
+    btn.classList.toggle('on', availableDurations.has(face));
+  });
+}
+
+document.getElementById('durationLegend').addEventListener('click', (e) => {
+  const btn = e.target.closest('.dur-toggle');
+  if (!btn) return;
+  const face = Number(btn.dataset.face);
+  if (availableDurations.has(face)) {
+    if (availableDurations.size === 1) return; // keep at least one option available
+    availableDurations.delete(face);
+  } else {
+    availableDurations.add(face);
+  }
+  saveAvailableDurations();
+  renderDurationToggles();
+});
+
 function pipsForFace(face) {
   const map = {
     1: [5],
@@ -499,7 +569,8 @@ document.getElementById('rollBtn').addEventListener('click', () => {
 
   const validFaces = [1, 2, 3, 4, 5, 6].filter(f => tasks[f - 1] && !tasks[f - 1].done);
   const taskFace = validFaces[Math.floor(Math.random() * validFaces.length)];
-  const durFace = 1 + Math.floor(Math.random() * 6);
+  const availFaces = [...availableDurations];
+  const durFace = availFaces[Math.floor(Math.random() * availFaces.length)];
 
   document.getElementById('result').classList.add('show');
   const dieTask = document.getElementById('dieTask');
@@ -604,6 +675,8 @@ document.getElementById('refreshBtn').addEventListener('click', async () => {
 
 loadTasks();
 render();
+loadAvailableDurations();
+renderDurationToggles();
 pullFromCloud();
 </script>
 </body>
